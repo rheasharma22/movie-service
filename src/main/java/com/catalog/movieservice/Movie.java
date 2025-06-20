@@ -42,7 +42,7 @@ public class Movie {
         return genre;
     }
 
-    public void setGenre() {
+    public void setGenre(String genre) {
         this.genre = genre;
     }
 
