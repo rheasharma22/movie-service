@@ -1,9 +1,11 @@
 package com.catalog.movieservice;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.util.Optional;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/movies")
@@ -11,35 +13,54 @@ public class MovieController {
     @Autowired
     private MovieRepository movieRepository;
 
+    private MovieDTO convertToDTO(Movie movie) {
+        MovieDTO dto = new MovieDTO();
+        dto.setId(movie.getId());
+        dto.setTitle(movie.getTitle());
+        dto.setGenre(movie.getGenre());
+        dto.setRating((long) movie.getRating());
+        return dto;
+    }
+
     @GetMapping
-    public List<Movie> getAllMovies() {
-        return movieRepository.findAll();
+    public List<MovieDTO> getAllMovies() {
+        return movieRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     @PostMapping
-    public Movie addMovie(@RequestBody Movie movie) {
-        return movieRepository.save(movie);
+    public ResponseEntity<Movie> addMovie(@Valid @RequestBody MovieDTO movieDTO) {
+        Movie movie = new Movie();
+        movie.setTitle(movieDTO.getTitle());
+        movie.setGenre(movieDTO.getGenre());
+        movie.setRating(movieDTO.getRating());
+
+        Movie savedMovie = movieRepository.save(movie);
+        return ResponseEntity.ok(savedMovie);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Movie> getMovieById(@PathVariable Long id) {
-        Optional<Movie> movie = movieRepository.findById(id);
-        return movie.map(ResponseEntity::ok)
+    public ResponseEntity<MovieDTO> getMovieById(@PathVariable Long id) {
+        return movieRepository.findById(id)
+                .map(movie -> ResponseEntity.ok(convertToDTO(movie)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody Movie updatedMovie) {
-        Optional<Movie> optionalMovie = movieRepository.findById(id);
+    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @Valid @RequestBody MovieDTO movieDTO) {
+        Optional<Movie> movieOptional = movieRepository.findById(id);
 
-        if (optionalMovie.isPresent()) {
-            Movie existingMovie = optionalMovie.get();
-            existingMovie.setTitle(updatedMovie.getTitle());
-            existingMovie.setGenre(updatedMovie.getGenre());
-            existingMovie.setRating(updatedMovie.getRating());
+        if (movieOptional.isPresent()) {
+            Movie movie = movieOptional.get();
+            movie.setTitle(movieDTO.getTitle());
+            movie.setGenre(movieDTO.getGenre());
+            movie.setRating(movieDTO.getRating());
 
-            Movie savedMovie = movieRepository.save(existingMovie);
-            return ResponseEntity.ok(savedMovie);
+            movieRepository.save(movie);
+            return ResponseEntity.ok(movie);
         } else {
             return ResponseEntity.notFound().build();
         }
