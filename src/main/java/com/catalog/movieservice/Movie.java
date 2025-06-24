@@ -58,7 +58,7 @@ public class Movie {
     }
 
     @ManyToOne
-    @JsonBackReference
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public User getUser() {

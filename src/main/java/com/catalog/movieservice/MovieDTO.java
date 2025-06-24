@@ -18,6 +18,10 @@ public class MovieDTO {
     @DecimalMax(value = "10.0", message = "Rating must be <= 10.0")
     private long rating;
 
+    private Long userId;
+
+    private UserDTO user;
+
     public MovieDTO() {}
 
     public MovieDTO(String title, String genre, long rating) {
@@ -56,5 +60,21 @@ public class MovieDTO {
 
     public void setRating(long rating) {
         this.rating = rating;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public UserDTO getUser() {
+        return user;
+    }
+
+    public void setUser(UserDTO user) {
+        this.user = user;
     }
 }
